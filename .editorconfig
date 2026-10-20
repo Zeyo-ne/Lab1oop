@@ -1,10 +1,14 @@
-# https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/language-rules
+# Google C# Style Guide: https://google.github.io/styleguide/csharpguide.html
+# Analyzer settings inherited from the lab template are retained where compatible.
+
+root = true
 
 [*.{cs,vb}]
-tab_width = 4
-indent_size = 4
+indent_style = space
+tab_width = 2
+indent_size = 2
 end_of_line = lf
-max_line_length = 120
+max_line_length = 100
 
 dotnet_diagnostic.ide0001.severity = warning
 dotnet_diagnostic.ide0002.severity = warning
@@ -41,7 +45,7 @@ dotnet_diagnostic.ide0010.severity = suggestion
 
 # IDE0011
 dotnet_diagnostic.ide0011.severity = warning
-csharp_prefer_braces = when_multiline:warning
+csharp_prefer_braces = true:warning
 
 # IDE0016
 dotnet_diagnostic.ide0016.severity = warning
@@ -119,7 +123,7 @@ dotnet_diagnostic.ide0035.severity = warning
 
 # IDE0036
 dotnet_diagnostic.ide0036.severity = warning
-csharp_preferred_modifier_order = public, private, protected, internal, static, extern, new, virtual, abstract, sealed, override, readonly, required, unsafe, volatile, async
+csharp_preferred_modifier_order = public, protected, internal, private, new, abstract, virtual, override, sealed, static, readonly, extern, unsafe, volatile, async
 
 # IDE0037
 dotnet_diagnostic.ide0037.severity = warning
@@ -182,14 +186,14 @@ dotnet_diagnostic.ide0074.severity = suggestion
 dotnet_style_prefer_compound_assignment = true:suggestion
 
 # IDE0055
-dotnet_sort_system_directives_first = false
+dotnet_sort_system_directives_first = true
 dotnet_separate_import_directive_groups = false
 dotnet_style_namespace_match_folder = true:warning
-csharp_new_line_before_open_brace = all
-csharp_new_line_before_else = true
-csharp_new_line_before_catch = true
-csharp_new_line_before_finally = true
-csharp_new_line_before_members_in_object_initializers = false
+csharp_new_line_before_open_brace = none
+csharp_new_line_before_else = false
+csharp_new_line_before_catch = false
+csharp_new_line_before_finally = false
+csharp_new_line_before_members_in_object_initializers = true
 csharp_new_line_before_members_in_anonymous_types = true
 csharp_new_line_between_query_expression_clauses = true
 csharp_indent_case_contents = true
@@ -608,3 +612,25 @@ dotnet_diagnostic.SA1618.severity = none
 dotnet_diagnostic.SA1206.severity = none
 
 resharper_braces_redundant = false
+
+# Google uses _camelCase for non-public fields and properties, including constants.
+dotnet_naming_symbols.non_public_fields_and_properties.applicable_kinds = field, property
+dotnet_naming_symbols.non_public_fields_and_properties.applicable_accessibilities = private, internal, protected, protected_internal, private_protected
+dotnet_naming_style.underscore_camel_case.capitalization = camel_case
+dotnet_naming_style.underscore_camel_case.required_prefix = _
+dotnet_naming_rule.non_public_fields_and_properties_use_underscore_camel_case.symbols = non_public_fields_and_properties
+dotnet_naming_rule.non_public_fields_and_properties_use_underscore_camel_case.style = underscore_camel_case
+dotnet_naming_rule.non_public_fields_and_properties_use_underscore_camel_case.severity = warning
+
+dotnet_naming_symbols.methods.applicable_kinds = method
+dotnet_naming_symbols.methods.applicable_accessibilities = *
+dotnet_naming_rule.methods_use_pascal_case.symbols = methods
+dotnet_naming_rule.methods_use_pascal_case.style = pascal_case_style
+dotnet_naming_rule.methods_use_pascal_case.severity = warning
+
+# These StyleCop rules require a different brace layout, parameter wrapping,
+# or constant naming scheme from the Google guide.
+dotnet_diagnostic.SA1116.severity = none
+dotnet_diagnostic.SA1117.severity = none
+dotnet_diagnostic.SA1303.severity = none
+dotnet_diagnostic.SA1500.severity = none

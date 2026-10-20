@@ -1,82 +1,80 @@
-﻿using Xunit;
+using Itmo.ObjectOrientedProgramming.Lab1.Contracts;
+using Itmo.ObjectOrientedProgramming.Lab1.Models;
+using Itmo.ObjectOrientedProgramming.Lab1.Models.Minerals;
+using Itmo.ObjectOrientedProgramming.Lab1.Models.Ores;
+using Itmo.ObjectOrientedProgramming.Lab1.Results;
+using Itmo.ObjectOrientedProgramming.Lab1.Ships;
+using Itmo.ObjectOrientedProgramming.Lab1.Storage;
+using Xunit;
 
 namespace Itmo.ObjectOrientedProgramming.Lab1.Tests;
 
-// Тестовые сценарии из задания (раздел «Тестовые сценарии»).
-// Значения по умолчанию: флот – один Venture, стратегия «Общий трюм»;
-// пояс «Пояс A» – 4 а.е., Veldspar; налог 0;
-// прайс-лист – Tritanium 4, Pyerite 10, Mexallon 70, Isogen 150.
-public class ContractScenarioTests
-{
-    /*
-    private readonly PriceList _defaultPriceList;
+public class ContractScenarioTests {
+  [Fact(DisplayName = "Сценарий 1. Контракт на срок")]
+  public void TimeContractWithSingleVentureIsCompleted() {
+    var contract = new TimeContract(TestData.CreateBelt(), TestData.CreateFleet(),
+                                    TestData.CreatePrices(), 6m);
+    var calculator = new Calculator(new Station(0m));
 
-    public ContractScenarioTests()
-    {
-        // например:
-        _priceList = new PriceList()
-            .AddMineral(new Tritanium(), 4.0m)
-            .AddMineral(new Pyerite(),  10.0m)
-            .AddMineral(new Mexallon(), 70.0m)
-            .AddMineral(new Isogen(),  150.0m);
-    }
-    */
+    CompletedContract completed = Assert.IsType<CompletedContract>(calculator.Calculate(contract));
+    Assert.Equal(1, completed.TripCount);
+    Assert.Equal(6m, completed.WorkTime);
+    Assert.Equal(400m, completed.MinedVolume);
+    Assert.Equal(8000L, completed.Minerals[MineralCatalog.Tritanium]);
+    Assert.Equal(0L, completed.RemainingOreUnits);
+    Assert.Equal(32000m, completed.Revenue);
+    Assert.Equal(6000m, completed.RentalCost);
+    Assert.Equal(0m, completed.Tax);
+    Assert.Equal(26000m, completed.Profit);
+  }
 
-    [Fact(DisplayName = "Сценарий 1. Контракт на срок")]
-    public void TimeContract_WithSingleVenture_IsCompleted()
-    {
-        // Arrange: контракт на 6 ч
-        // var contract = new Contract(...);
+  [Fact(DisplayName = "Сценарий 2. Пустой флот")]
+  public void FleetWithoutShipsCannotBeCreated() {
+    Ship[] ships = [];
+    var strategy = new SharedHoldStrategy();
 
-        // Act
-        // var result = calculator.Calculate(contract, ...);
+    Assert.Throws<ArgumentException>(() => new Fleet(ships, strategy));
+  }
 
-        // Assert: выполнен; 1 рейс, время работы 6 ч, добыто 400 м³;
-        // Tritanium – 8000; выручка 32 000, аренда 6000, прибыль 26 000
-        // Assert.Equal(result.Status, ContractStatusEnum.Completed);
-        Assert.Fail("Сценарий не реализован");
-    }
+  [Fact(DisplayName = "Сценарий 3. Контракт на объём")]
+  public void VolumeContractWithSingleVentureIsCompleted() {
+    var contract = new VolumeContract(TestData.CreateBelt(), TestData.CreateFleet(),
+                                      TestData.CreatePrices(), 1000m);
+    var calculator = new Calculator(new Station(0m));
 
-    [Fact(DisplayName = "Сценарий 2. Пустой флот")]
-    public void Fleet_WithoutShips_CannotBeCreated()
-    {
-        // Arrange + Act: создание флота без кораблей
+    CompletedContract completed = Assert.IsType<CompletedContract>(calculator.Calculate(contract));
+    Assert.Equal(3, completed.TripCount);
+    Assert.Equal(16m, completed.WorkTime);
+    Assert.Equal(1000m, completed.MinedVolume);
+    Assert.Equal(20000L, completed.Minerals[MineralCatalog.Tritanium]);
+    Assert.Equal(0L, completed.RemainingOreUnits);
+    Assert.Equal(80000m, completed.Revenue);
+    Assert.Equal(16000m, completed.RentalCost);
+    Assert.Equal(0m, completed.Tax);
+    Assert.Equal(64000m, completed.Profit);
+  }
 
-        // Assert: исключение
-        Assert.Fail("Сценарий не реализован");
-    }
+  [Fact(DisplayName = "Сценарий 4. Отклонение по сроку")]
+  public void TimeContractTooShortIsRejected() {
+    var contract = new TimeContract(TestData.CreateBelt(), TestData.CreateFleet(),
+                                    TestData.CreatePrices(), 2m);
+    var calculator = new Calculator(new Station(0m));
 
-    [Fact(DisplayName = "Сценарий 3. Контракт на объём")]
-    public void VolumeContract_WithSingleVenture_IsCompleted()
-    {
-        // Arrange: контракт на 1000 м³
+    RejectedContract rejected = Assert.IsType<RejectedContract>(calculator.Calculate(contract));
+    Assert.Equal(RejectionReason.InsufficientTime, rejected.Reason);
+    Assert.False(string.IsNullOrWhiteSpace(rejected.Description));
+  }
 
-        // Act
+  [Fact(DisplayName = "Сценарий 5. Отклонение по прайс-листу")]
+  public void ContractWithIncompletePriceListIsRejected() {
+    var prices =
+        new PriceList(new Dictionary<Mineral, decimal> { [MineralCatalog.Tritanium] = 4m });
+    var contract = new TimeContract(TestData.CreateBelt(OreCatalog.Scordite),
+                                    TestData.CreateFleet(), prices, 6m);
+    var calculator = new Calculator(new Station(0m));
 
-        // Assert: выполнен; 3 рейса (400, 400, 200 м³), время работы 16 ч;
-        // Tritanium – 20 000; выручка 80 000, аренда 16 000, прибыль 64 000
-        Assert.Fail("Сценарий не реализован");
-    }
-
-    [Fact(DisplayName = "Сценарий 4. Отклонение по сроку")]
-    public void TimeContract_TooShort_IsRejected()
-    {
-        // Arrange: контракт на 2 ч
-
-        // Act
-
-        // Assert: отклонён – срока не хватает на один рейс
-        Assert.Fail("Сценарий не реализован");
-    }
-
-    [Fact(DisplayName = "Сценарий 5. Отклонение по прайс-листу")]
-    public void Contract_WithIncompletePriceList_IsRejected()
-    {
-        // Arrange: пояс с Scordite, в прайс-листе нет цены Pyerite; контракт на 6 ч
-
-        // Act
-
-        // Assert: отклонён – в прайс-листе нет цены минерала из выхода руды
-        Assert.Fail("Сценарий не реализован");
-    }
+    RejectedContract rejected = Assert.IsType<RejectedContract>(calculator.Calculate(contract));
+    Assert.Equal(RejectionReason.MissingMineralPrice, rejected.Reason);
+    Assert.Contains("Pyerite", rejected.Description, StringComparison.Ordinal);
+  }
 }

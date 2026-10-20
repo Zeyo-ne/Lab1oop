@@ -1,0 +1,5 @@
+<Project>
+  <!-- Keep the repository's Google C# style. The package target otherwise
+       replaces .editorconfig with the template's rules before every build. -->
+  <Target Name="CopyEditorConfig" />
+</Project>
